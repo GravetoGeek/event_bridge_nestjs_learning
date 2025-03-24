@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
-import { EventbridgeService } from '../eventbridge/eventbridge.service';
+import {Injectable} from '@nestjs/common'
+import {EventbridgeService} from '../eventbridge/eventbridge.service'
 
 @Injectable()
 export class RetentativasService {
@@ -9,6 +9,7 @@ export class RetentativasService {
 
     async realizarRetentativa(dados: any) {
         try {
+            console.log(process.env.API_GET_CUSTOMER_URL)
             if (!process.env.API_GET_CUSTOMER_URL) {
                 throw new Error('API_GET_CUSTOMER_URL is not defined in the environment variables');
             }
