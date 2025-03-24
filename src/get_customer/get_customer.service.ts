@@ -3,11 +3,12 @@ import {Injectable} from '@nestjs/common'
 @Injectable()
 export class GetCustomerService {
     async getCustomer() {
-
+        console.log('getCustomer');
         await Promise.resolve(); // Simulate an asynchronous operation
-        const random = Math.random() * 0.45;
+        const random = Math.random() * 1;
+        console.log({random});
 
-        if (random > 0.45) {
+        if (random < 0.50) {
             return {
                 statusCode: 200,
                 body: JSON.stringify({
@@ -23,7 +24,7 @@ export class GetCustomerService {
             return {
                 statusCode: 500,
                 body: JSON.stringify({
-                    message: 'Internal server error'
+                    message: 'Internal server error(teste)'
                 }),
             };
         }

@@ -14,7 +14,6 @@ export class RetentativasService {
                 throw new Error('API_GET_CUSTOMER_URL is not defined in the environment variables');
             }
             const url = new URL(process.env.API_GET_CUSTOMER_URL);
-            url.search = new URLSearchParams(dados).toString();
             const response = await fetch(url.toString());
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -29,12 +28,14 @@ export class RetentativasService {
     }
 
     async agendarProximaRetentativa(dados: any) {
-        if (dados.retentativa < 3) {
-            dados.retentativa++;
+        console.log('agendarProximaRetentativa', dados);
+        if (dados.tentativa < 3) {
+            dados.tentativa++;
             let delay = 0;
-            if (dados.retentativa === 2) {
+
+            if (dados.tentativa === 2) {
                 delay = 60 * 60 * 1000; // 1 hora em milissegundos
-            } else if (dados.retentativa === 3) {
+            } else if (dados.tentativa === 3) {
                 delay = 4 * 60 * 60 * 1000; // 4 horas em milissegundos
             } else {
                 delay = 5 * 60 * 1000; // 5 minutos em milissegundos, para a primeira retentativa.

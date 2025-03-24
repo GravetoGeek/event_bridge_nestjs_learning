@@ -1,9 +1,12 @@
-import { Module } from '@nestjs/common';
-import { RetentativasService } from './retentativas.service';
-import { RetentativasController } from './retentativas.controller';
+import {Module} from '@nestjs/common'
+import {EventbridgeModule} from 'src/eventbridge/eventbridge.module'
+import {RetentativasController} from './retentativas.controller'
+import {RetentativasService} from './retentativas.service'
 
 @Module({
-  providers: [RetentativasService],
-  controllers: [RetentativasController]
+    imports: [EventbridgeModule],
+    providers: [RetentativasService],
+    controllers: [RetentativasController],
+    exports: [RetentativasService],
 })
 export class RetentativasModule {}

@@ -11,6 +11,7 @@ export class GetCustomerController {
     // Example:
     @Get()
     getCustomerById() {
+        console.log('getCustomerById');
       return this.GetCustomerService.getCustomer(); // Ensure the method exists and returns a valid type
     }
 }

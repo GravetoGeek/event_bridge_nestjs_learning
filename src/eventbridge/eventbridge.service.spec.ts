@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { EventbridgeService } from './eventbridge.service';
+import {Test,TestingModule} from '@nestjs/testing'
+import {EventbridgeService} from './eventbridge.service'
 
-describe('EventbridgeService', () => {
-  let service: EventbridgeService;
+describe('EventbridgeService',() => {
+    let service: EventbridgeService
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [EventbridgeService],
-    }).compile();
+    beforeEach(async () => {
+        const module: TestingModule=await Test.createTestingModule({
+            providers: [EventbridgeService],
+        }).compile()
 
-    service = module.get<EventbridgeService>(EventbridgeService);
-  });
+        service=module.get<EventbridgeService>(EventbridgeService)
+    })
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    it('should be defined',() => {
+        expect(service).toBeDefined()
+    })
+})
