@@ -1,0 +1,78 @@
+service: banco-pan
+
+plugins:
+  - serverless-offline
+  - serverless-localstack
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  profile: localstack
+  region: us-east-1
+  endpoint: http://localhost:4566
+
+custom:
+  localstack:
+    stages:
+      - dev
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: false
+    exclude: ['aws-sdk'] # Exclua o AWS SDK, pois ele já está disponível no ambiente Lambda
+    target: 'node22'
+    platform: 'node'
+    concurrency: 10
+
+package:
+  exclude:
+    # - node_modules/**
+    - .git/**
+    - .vscode/**
+    - .serverless/**
+    - tests/**
+    - README.md
+    - package-lock.json
+    - yarn.lock
+    - jest.config.js
+    - tsconfig.json
+    - .eslintrc.js
+    - .prettierrc
+    - infra/**
+
+
+functions:
+  # main:
+  #   handler: dist/src/main.handler
+  #   events:
+  #     - http:
+  #         method: ANY
+  #         path: /
+  #     - http:
+  #         method: ANY
+  #         path: '{proxy+}'
+  eventbridgeHandler:
+    handler: dist/src/main.handler
+    events:
+      - http:
+          path: eventbridge/agendarRetentativa
+          method: post
+      - eventBridge:
+          eventBus: RETENTATIVAS_API
+          pattern:
+            source:
+              - api.retentativa.realizar
+
+  get_customer:
+    handler: dist/src/main.handler
+    events:
+      - http:
+          path: get_customer
+          method: post
+
+  realizarRetentativa:
+    handler: dist/src/main.handler
+    events:
+      - http:
+          path: realizarRetentativa
+          method: post
