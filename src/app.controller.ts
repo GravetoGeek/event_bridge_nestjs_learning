@@ -1,12 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import {Controller,Get} from '@nestjs/common'
+import {AppService} from './app.service'
+import {NestjsLoggerService} from './common/services/logger.service'
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+    private readonly logger = new NestjsLoggerService({ context: AppController.name });
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
-  }
+    constructor(private readonly appService: AppService) {}
+
+    @Get('hello')
+    getHello(): string {
+        return this.appService.getHello()
+    }
 }
