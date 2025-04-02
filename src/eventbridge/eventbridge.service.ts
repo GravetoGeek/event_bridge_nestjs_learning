@@ -4,70 +4,101 @@ import {Injectable} from '@nestjs/common'
 
 @Injectable()
 export class EventbridgeService {
-    private eventBridge: EventBridgeClient;
-    private eventBusName: string;
-    private accountId: string;
+    private eventBridge: EventBridgeClient
+    private eventBusName: string
+    private accountId: string
 
     constructor() {
-        this.eventBridge = new EventBridgeClient({
+        this.eventBridge=new EventBridgeClient({
             region: process.env.AWS_REGION,
             endpoint: process.env.LOCALSTACK_ENDPOINT,
-        });
-        this.eventBusName = process.env.EVENTBRIDGE_BUS_NAME ?? 'default-event-bus-name';
-        this.getAccountId();
+        })
+        this.eventBusName='RETENTATIVAS_API'
+        this.getAccountId()
     }
 
     async getAccountId() {
-        const client = new STSClient({
+        const client=new STSClient({
             region: process.env.AWS_REGION,
             endpoint: process.env.LOCALSTACK_ENDPOINT,
-        });
-        const command = new GetCallerIdentityCommand({
-        });
-        const response = await client.send(command);
-        this.accountId = response.Account ?? '';
+        })
+        const command=new GetCallerIdentityCommand({
+        })
+        const response=await client.send(command)
+        this.accountId=response.Account??''
     }
 
-    async putEvent(detail: any, detailType: string, source: string) {
-        const params = {
+    /**
+     * Sends an event to Amazon EventBridge.
+     *
+     * @param detail - The event payload, which contains the details of the event.
+     * @param detailType - A free-form string used to identify the type of the event.
+     * @param source - The source of the event, typically the service or application emitting the event.
+     * @param eventBusName - The name of the event bus to which the event will be sent.
+     * @param time - The timestamp of the event. If not provided, the current time will be used.
+     * @returns A promise that resolves with the result of the `PutEventsCommand` execution.
+     *
+     * @throws An error if the EventBridge service call fails.
+     */
+    async putEvent({
+        detail,
+        detailType,
+        source,
+        eventBusName,
+        time
+    }) {
+        const params={
             Entries: [
                 {
                     Detail: JSON.stringify(detail),
                     DetailType: detailType,
-                    EventBusName: this.eventBusName,
+                    Time: time,
+                    EventBusName: eventBusName||this.eventBusName,
                     Source: source,
-                    Resources: [
-                        `arn:aws:sts::${this.accountId}:assumed-role/EC2-Role/i-*`
-                    ]
+                    // Resources: [
+                    //     `arn:aws:sts::${this.accountId}:assumed-role/EC2-Role/i-*`
+                    // ]
                 },
             ],
-        };
-        const command = new PutEventsCommand(params);
-        return this.eventBridge.send(command);
+        }
+        const command=new PutEventsCommand(params)
+        return this.eventBridge.send(command)
     }
-    async agendarRetentativa(dados: any) {
+
+    async agendarRetentativa(dados: { tentativa?: number; [key: string]: any }) {
         dados.tentativa = dados.tentativa ? dados.tentativa + 1 : 1;
         let delay = 0;
+        console.log("agendarRetentativa");
+        console.log({ tentativa: dados.tentativa });
+        console.log({dados})
+
         if (dados.tentativa === 2) {
-            delay = 30000;
-            // delay = 60 * 60 * 1000;
+            delay = 2 * 60 * 1000; // 5 minutos
         } else if (dados.tentativa === 3) {
-            delay = 60000;
-            // delay = 4 * 60 * 60 * 1000;
+            delay = 10 * 60 * 1000; // 10 minutos
+        } else if (dados.tentativa > 3) {
+            console.log('Máximo de tentativas atingido. Nenhum novo evento será agendado.');
+            console.log("HSM Falha");
+            return;
         } else {
-            delay = 10000;
-            // delay = 5 * 60 * 1000;
+            delay = 60 * 1000; // 1 minuto
         }
 
         const nextRetryTime = new Date(Date.now() + delay);
-        const nextRetryTimeISO = nextRetryTime.toISOString();
-        console.log(
-        await this.putEvent(
-            { ...dados, nextRetryTime: nextRetryTimeISO },
-            'agendarRetentativa',
-            'api.retentativa.agendamento'
-        )
-    )
-    }
 
+        const event = {
+            detail: { ...dados },
+            detailType: "realizarRetentativa",
+            source: "api.retentativa.realizar",
+            eventBusName: this.eventBusName,
+            time: nextRetryTime // Corrigido para passar um objeto Date
+        };
+
+        const result = await this.putEvent(event)
+
+        console.log(
+            result
+        );
+        return result
+    }
 }
